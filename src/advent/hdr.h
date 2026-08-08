@@ -1,6 +1,9 @@
 #ifndef __HDR_H
 #define __HDR_H
 
+#include <stdlib.h>
+#include <string.h>
+
 /*	$NetBSD: hdr.h,v 1.2 1995/03/21 12:05:02 cgd Exp $	*/
 
 /*-
@@ -57,8 +60,6 @@
  */
 
 /* hdr.h: included by c advent files */
-
-#pragma disable_warning 196
 
 typedef unsigned int UINT16;
 typedef signed int INT16;

@@ -17,9 +17,9 @@ typedef enum {
 	STATE_PLAY,
 	STATE_PAUSE,
 	STATE_GAME_OVER
-} state;
+} state_t;
 
-extern state game_state;
+extern state_t game_state;
 extern bool show_next;
 extern bool show_text;
 extern uint8_t level;
@@ -43,9 +43,9 @@ typedef enum {
 	KEY_RESTART,
 	KEY_EXIT,
 	KEY_OTHER
-} key;
+} key_t;
 
-key key_get();
+key_t key_get();
 
 // playfield
 

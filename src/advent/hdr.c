@@ -1451,4 +1451,5 @@ char *wd1 = 0, *wd2 = 0;
 int blklin = 0;
 
 UINT8 buffer[BUFFER_SIZE];
-char strbuf1[MAXSTR + 1], strbuf2[MAXSTR + 1];
+char strbuf1[MAXSTR + 1];
+char strbuf2[MAXSTR + 1];

@@ -39,19 +39,33 @@ typedef enum {
 #define GDP_CMD_LINE_DX_POS  0x10
 #define GDP_CMD_LINE_DX_NEG  0x16
 
-__sfr __at 0x20 GDP_CMD;    // W: command 
-__sfr __at 0x2F GDP_STATUS; // R: status (ready)
-__sfr __at 0x28 GDP_X_HI;   // RW: x pos hi
-__sfr __at 0x29 GDP_X_LO;   // RW: x pos lo
-__sfr __at 0x2A GDP_Y_HI;   // RW: y pos hi
-__sfr __at 0x2B GDP_Y_LO;   // RW: y pos lo 
-__sfr __at 0x25 GDP_DX;     // W: delta x
-__sfr __at 0x27 GDP_DY;     // W: delta y
-__sfr __at 0x21 GDP_CTRL_1; // RW: control register 1
-__sfr __at 0x22 GDP_CTRL_2; // RW: control register 2
-__sfr __at 0x23 GDP_CHAR_SIZE;
-__sfr __at 0x36 GDP_SCROLL; // W: graphic scroll
-__sfr __at 0x30 GFX_COMMON; // RW: graphic common control 
+[[sdcc::sfr(0x20)]] extern uint8_t gdp_cmd;    // W: command
+[[sdcc::sfr(0x2F)]] extern uint8_t gdp_status; // R: status (ready)
+[[sdcc::sfr(0x28)]] extern uint8_t gdp_x_hi;   // RW: x pos hi
+[[sdcc::sfr(0x29)]] extern uint8_t gdp_x_lo;   // RW: x pos lo
+[[sdcc::sfr(0x2A)]] extern uint8_t gdp_y_hi;   // RW: y pos hi
+[[sdcc::sfr(0x2B)]] extern uint8_t gdp_y_lo;   // RW: y pos lo
+[[sdcc::sfr(0x25)]] extern uint8_t gdp_dx;     // W: delta x
+[[sdcc::sfr(0x27)]] extern uint8_t gdp_dy;     // W: delta y
+[[sdcc::sfr(0x21)]] extern uint8_t gdp_ctrl_1; // RW: control register 1
+[[sdcc::sfr(0x22)]] extern uint8_t gdp_ctrl_2; // RW: control register 2
+[[sdcc::sfr(0x23)]] extern uint8_t gdp_char_size;
+[[sdcc::sfr(0x36)]] extern uint8_t gdp_scroll; // W: graphic scroll
+[[sdcc::sfr(0x30)]] extern uint8_t gfx_common; // RW: graphic common control
+
+#define GDP_CMD       gdp_cmd
+#define GDP_STATUS    gdp_status
+#define GDP_X_HI      gdp_x_hi
+#define GDP_X_LO      gdp_x_lo
+#define GDP_Y_HI      gdp_y_hi
+#define GDP_Y_LO      gdp_y_lo
+#define GDP_DX        gdp_dx
+#define GDP_DY        gdp_dy
+#define GDP_CTRL_1    gdp_ctrl_1
+#define GDP_CTRL_2    gdp_ctrl_2
+#define GDP_CHAR_SIZE gdp_char_size
+#define GDP_SCROLL    gdp_scroll
+#define GFX_COMMON    gfx_common
 
 extern uint8_t gdp_write_page;
 extern uint8_t gdp_display_page;

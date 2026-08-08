@@ -15,10 +15,10 @@ uint8_t buffer[BUFFER_SIZE];
 
 invader invaders[55];
 bullet bullets[MAX_BULLETS];
-player player;
-mothership mothership;
-grid grid;
-missile missile;
+player_t player;
+mothership_t mothership;
+grid_t grid;
+missile_t missile;
 shield shields[4];
 
 invader *first_inv;

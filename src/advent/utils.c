@@ -8,7 +8,6 @@
  * Parts of this written by Tomaž Štih
  */
 
-#include <bdos.h>
 #include <stdio.h>
 #include <string.h>
 #include "vocab.h"
@@ -16,43 +15,15 @@
 
 #define BCD2BIN(val) (((val) & 15) + ((val) >> 4) * 10)
 
-__sfr __at 0xA0 CTC_TENTHS_CS;
-__sfr __at 0xA1 CTC_HUNDREDS;
-__sfr __at 0xA2 CTC_SECONDS;
+[[sdcc::sfr(0xA0)]] UINT8 ctc_tenths_cs;
+[[sdcc::sfr(0xA1)]] UINT8 ctc_hundreds;
+[[sdcc::sfr(0xA2)]] UINT8 ctc_seconds;
 
-fcb_t fcb;
-UINT8 dma[DMA_SIZE];
-UINT8 prev_area, area;
+#define CTC_TENTHS_CS ctc_tenths_cs
+#define CTC_HUNDREDS  ctc_hundreds
+#define CTC_SECONDS   ctc_seconds
 
-int fparse(char *path, fcb_t *fcb, UINT8 *area);
-
-char *strcpy(char *destination, const char *source)
-{
-	while (*source != '\0') {
-		*destination = *source;
-		destination++;
-		source++;
-	}
-	*destination = '\0';
-	return destination;
-}
-
-void exit(int status)
-{
-    status;
-    fclose();
-    // unfortunately, the status is lost in CP/M
-    bdos(P_TERMCPM, 0);
-}
-
-UINT16 atoi(char *str)
-{
-    UINT16 res = 0;
-    for (UINT8 i = 0; str[i] != '\0'; ++i) {
-        res = res * 10 + str[i] - '0';
-    }
-    return res;
-}
+static FILE *game_file;
 
 void create_fn(char *name, char *fn) {
     UINT8 len = length(name) - 1;
@@ -62,108 +33,40 @@ void create_fn(char *name, char *fn) {
     to_upper(fn);
 }
 
-void fopen(char *path) {
-    // reset fcb
-    memset(&fcb, 0, sizeof(fcb_t));
-    // parse filename 
-    fparse(path, &fcb, &area);
-    // preserve user area, and change it
-    prev_area = bdos(F_USERNUM, 0xff);
-    if (area != prev_area) { // only if different 
-        bdos(F_USERNUM, area);
-    } 
-    // result of bdos operation 
-    bdos_ret_t result;
-    // open file 
-    bdosret(F_OPEN, (UINT16)&fcb, &result);
-    // set DMA to our block    
-    bdos(F_DMAOFF, (UINT16)dma);
+void game_file_open(char *path) {
+    game_file_close();
+    game_file = fopen(path, "rb");
 }
 
-UINT8 *fread(UINT8 *buf, UINT16 pos, UINT16 len) {
-    bdos_ret_t result;
-    // seek
-    UINT16 rec = pos / DMA_SIZE;
-    UINT16 dma_offs = pos % DMA_SIZE;
-    fcb.rrec = rec;
-    bdosret(F_READRAND, (UINT16)&fcb, &result);
-    // read
-    UINT16 r_len = 0;
-    UINT8 *p_buf = buf;
-    while (r_len < len) {
-    	bdosret(F_READ, (UINT16)&fcb, &result);
-        UINT16 count = DMA_SIZE - dma_offs;
-        if (r_len + count > len) {
-            count = len - r_len;
-        }
-		memcpy(p_buf, dma + dma_offs, count);
-		p_buf += count;
-        r_len += count;
-		dma_offs = 0;
+UINT8 *game_file_read(UINT8 *buf, UINT16 pos, UINT16 len) {
+    if (game_file == NULL || fseek(game_file, pos, SEEK_SET) != 0) {
+        return NULL;
     }
-	return buf;
+    if (fread(buf, 1, len, game_file) != len) {
+        return NULL;
+    }
+    return buf;
 }
 
-void fclose() {
-    bdos_ret_t result;
-    bdosret(F_CLOSE, (UINT16)&fcb, &result);
-    if (area != prev_area) {
-        bdos(F_USERNUM, prev_area);
+void game_file_close(void) {
+    if (game_file != NULL) {
+        fclose(game_file);
+        game_file = NULL;
     }
 }
 
-BOOL fwrite(char *path, UINT8 *buf, UINT16 len) {
-    BOOL ret_val = FALSE;
-    // reset fcb
-    memset(&fcb, 0, sizeof(fcb_t));
-    // parse filename 
-    UINT8 area;
-    if (fparse(path, &fcb, &area)) {
-        return ret_val;
+BOOL game_file_write(char *path, UINT8 *buf, UINT16 len) {
+    FILE *file = fopen(path, "wb");
+
+    if (file == NULL) {
+        return FALSE;
     }
-    // preserve user area, and change it
-    UINT8 prev_area = bdos(F_USERNUM, 0xff);
-    if (area != prev_area) { // only if different 
-        bdos(F_USERNUM, area);
+    if (fwrite(buf, 1, len, file) != len) {
+        fclose(file);
+        return FALSE;
     }
-    // result of bdos operation 
-    bdos_ret_t result;
-    BOOL file_open = FALSE;
-    // open or create file 
-    bdosret(F_OPEN, (UINT16)&fcb, &result);
-    if (result.reta == BDOS_FAILURE) { 
-        bdosret(F_MAKE, (UINT16)&fcb, &result);
-        if (result.reta == BDOS_FAILURE) {
-            goto fwrite_done;
-        }
-    }
-    file_open = TRUE; // file is open
-    // set DMA to our block
-    bdos(F_DMAOFF, (UINT16)dma);
-    // write
-    UINT16 w_len = 0;
-    UINT8 *p_buf = buf;
-    while (w_len < len) {
-        // set DMA
-        UINT16 sz = (len - w_len) > DMA_SIZE ? DMA_SIZE : (len - w_len);
-        memcpy(dma, p_buf, sz);
-        // write
-        bdosret(F_WRITE, (UINT16)&fcb, &result);
-        if (result.reta != 0) {
-            goto fwrite_done;
-        }
-        p_buf += sz;
-        w_len += sz;
-    }
-    ret_val = TRUE;
-fwrite_done:
-    if (file_open) {
-        bdosret(F_CLOSE, (UINT16)&fcb, &result);
-    }
-    if (area != prev_area) {
-        bdos(F_USERNUM, prev_area);
-    }
-    return ret_val;
+    fclose(file);
+    return TRUE;
 }
 
 void to_lower(char *str) {

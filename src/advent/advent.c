@@ -81,7 +81,7 @@ void main(int argc,char **argv)
 
 	printf("Scanning cave structure...\n\r");
 
-	fopen(DATA_BIN);
+	game_file_open(DATA_BIN);
 
  	init();         /* Initialize everything */
 // 	signal(SIGINT,trapdel);
@@ -89,10 +89,10 @@ void main(int argc,char **argv)
 	if (argc > 1)   /* Restore file specified */
 	{               /* Restart is label 8305 (Fortran) */
 		create_fn(argv[1], strbuf1);
-		fopen(strbuf1);
+		game_file_open(strbuf1);
 		i = restore(strbuf1);       /* See what we've got */
-		fclose();
-		fopen(DATA_BIN);
+		game_file_close();
+		game_file_open(DATA_BIN);
 		switch(i)
 		{
 		    case 0:     /* The restore worked fine */

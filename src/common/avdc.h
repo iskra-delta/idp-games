@@ -38,21 +38,35 @@ typedef struct {
 #define AVDC_CMD_SET_REG_0    0x10
 #define AVDC_CMD_DISPLAY_ON   0x3D
 
-__sfr __at 0x39 AVDC_CMD;     // W: command
-__sfr __at 0x39 AVDC_STATUS;  // R: status (ready)
-__sfr __at 0x36 AVDC_ACCESS;  // R: status (access)
-__sfr __at 0x38 AVDC_INIT;    // W: write to current IR (init/interrupt register)
-__sfr __at 0x34 AVDC_CHR;     // R/W: character register
-__sfr __at 0x35 AVDC_ATTR;    // R/W: attribute register
+[[sdcc::sfr(0x39)]] extern uint8_t avdc_cmd;     // W: command
+[[sdcc::sfr(0x39)]] extern uint8_t avdc_status;  // R: status (ready)
+[[sdcc::sfr(0x36)]] extern uint8_t avdc_access;  // R: status (access)
+[[sdcc::sfr(0x38)]] extern uint8_t avdc_init_port; // W: current init/interrupt register
+[[sdcc::sfr(0x34)]] extern uint8_t avdc_chr;     // R/W: character register
+[[sdcc::sfr(0x35)]] extern uint8_t avdc_attr;    // R/W: attribute register
 
-__sfr __at 0x3C AVDC_CUR_LWR; // W: cursor address lower
-__sfr __at 0x3D AVDC_CUR_UPR; // W: cursor address upper
+[[sdcc::sfr(0x3C)]] extern uint8_t avdc_cur_lwr; // W: cursor address lower
+[[sdcc::sfr(0x3D)]] extern uint8_t avdc_cur_upr; // W: cursor address upper
 
-__sfr __at 0xAC AVDC_MODE_SETTING;
-__sfr __at 0x32 AVDC_COMMON_TXT_ATTR;
-__sfr __at 0x3E AVDC_SCREEN_START_2_LOWER;
-__sfr __at 0x3F AVDC_SCREEN_START_2_UPPER;
-__sfr __at 0x20 AVDC_GDP_STATUS;
+[[sdcc::sfr(0xAC)]] extern uint8_t avdc_mode_setting;
+[[sdcc::sfr(0x32)]] extern uint8_t avdc_common_txt_attr;
+[[sdcc::sfr(0x3E)]] extern uint8_t avdc_screen_start_2_lower;
+[[sdcc::sfr(0x3F)]] extern uint8_t avdc_screen_start_2_upper;
+[[sdcc::sfr(0x20)]] extern uint8_t avdc_gdp_status;
+
+#define AVDC_CMD                  avdc_cmd
+#define AVDC_STATUS               avdc_status
+#define AVDC_ACCESS               avdc_access
+#define AVDC_INIT                 avdc_init_port
+#define AVDC_CHR                  avdc_chr
+#define AVDC_ATTR                 avdc_attr
+#define AVDC_CUR_LWR              avdc_cur_lwr
+#define AVDC_CUR_UPR              avdc_cur_upr
+#define AVDC_MODE_SETTING         avdc_mode_setting
+#define AVDC_COMMON_TXT_ATTR      avdc_common_txt_attr
+#define AVDC_SCREEN_START_2_LOWER avdc_screen_start_2_lower
+#define AVDC_SCREEN_START_2_UPPER avdc_screen_start_2_upper
+#define AVDC_GDP_STATUS           avdc_gdp_status
 
 extern uint8_t _rows;
 extern uint8_t _cols;

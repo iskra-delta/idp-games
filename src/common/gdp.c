@@ -3,6 +3,7 @@
 
 uint8_t gdp_write_page;
 uint8_t gdp_display_page;
+static bool gdp_dotted_emu;
 
 void gdp_wait_ready() {
     uint8_t status = 0;
@@ -24,17 +25,7 @@ void gdp_init() {
     gdp_write_page = 0;
     gdp_display_page = 0;
     GDP_SCROLL = 0;
-    if (sys_is_emu()) {
-        __asm
-            ld  hl, #call_gdp_line_dx_pos_dotted
-            ld  bc, #_gdp_line_dx_pos_dotted_emu
-            // overwrite "call _gdp_line_dx_pos_dotted" with "call _gdp_line_dx_pos_dotted_emu"
-            inc hl
-            ld  (hl), c
-            inc hl
-            ld  (hl), b
-        __endasm;
-    }
+    gdp_dotted_emu = sys_is_emu();
 }
 
 void gdp_cls() {
@@ -127,16 +118,11 @@ void gdp_set_display_page(uint8_t page) {
 }
 
 void gdp_line_dx_pos_dotted_proxy(uint8_t dx) {
-    __asm   
-        ld   hl, #2
-        add  hl, sp
-        ld   a, (hl)
-        push af
-        inc  sp
-    call_gdp_line_dx_pos_dotted:
-        call _gdp_line_dx_pos_dotted
-        inc  sp
-    __endasm;
+    if (gdp_dotted_emu) {
+        gdp_line_dx_pos_dotted_emu(dx);
+    } else {
+        gdp_line_dx_pos_dotted(dx);
+    }
 }
 
 void gdp_draw_row_xor_mask(uint8_t *mask_row) { 

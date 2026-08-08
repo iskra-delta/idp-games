@@ -11,7 +11,7 @@ uint8_t str_buffer[133];
 
 // state
 
-state game_state;
+state_t game_state;
 bool show_next;
 bool show_text;
 uint8_t level;
@@ -38,7 +38,7 @@ void state_init() {
 
 // key
 
-key key_get() {
+key_t key_get() {
 	char key;
 	if (!(key = kbhit())) { return KEY_NONE; }
 	switch (key) {
@@ -135,7 +135,7 @@ uint8_t playfield_collapse() {
 				render_playfield_row(yy);
 				render_playfield_row(yy + 1);
 			}
-			kbd_beep(FALSE);
+			kbd_beep(false);
 			y++;
 		}
 	}
@@ -442,7 +442,7 @@ void game_init() {
 }
 
 bool game_play() {
-	key key = key_get();
+	key_t key = key_get();
 	if (key == KEY_HIDE_TEXT) {
 		show_text = !show_text;
 		if (show_text) { render_show_text(); } 
@@ -494,7 +494,7 @@ bool game_play() {
 				uint8_t computed_level = (full_lines - 1) / 10;
 				if (computed_level > level) {
 					level = computed_level;
-					kbd_beep(TRUE);
+					kbd_beep(true);
 				}
 				render_level();
 				if (!block_next()) {

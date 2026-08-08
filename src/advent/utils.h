@@ -9,19 +9,16 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#include <partner/conio.h>
 #include "hdr.h"
-
-char *strcpy(char *destination, const char *source);
-void exit(int status);
-UINT16 atoi(char *str);
 
 void create_fn(char *name, char *fn);
 
-void fopen(char *path);
-UINT8 *fread(UINT8 *buf, UINT16 pos, UINT16 len);
-void fclose();
+void game_file_open(char *path);
+UINT8 *game_file_read(UINT8 *buf, UINT16 pos, UINT16 len);
+void game_file_close(void);
 
-BOOL fwrite(char *path, UINT8 *buf, UINT16 len);
+BOOL game_file_write(char *path, UINT8 *buf, UINT16 len);
 
 void to_lower(char *str);
 void to_upper(char *str);

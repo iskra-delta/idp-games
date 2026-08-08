@@ -14,7 +14,7 @@ uint8_t *gfx_index[120];
 
 // state
 
-state game_state;
+state_t game_state;
 bool show_next;
 uint8_t level;
 uint8_t steps;
@@ -37,7 +37,7 @@ void state_init() {
 
 // key
 
-key key_get() {
+key_t key_get() {
 	char key;
 	if (!(key = kbhit())) { return KEY_NONE; }
 	switch (key) {
@@ -696,7 +696,7 @@ void game_init() {
 }
 
 bool game_play() {
-	key key = key_get();
+	key_t key = key_get();
 	if (game_state == STATE_PLAY) {
 		switch (key) {
 		case KEY_LEFT:

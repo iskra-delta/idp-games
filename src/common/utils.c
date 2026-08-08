@@ -94,3 +94,43 @@ bool sys_is_emu() {
 int sys_rand() {
 	return rand() / 10; // WARNME: this should be removed when rand is fixed
 }
+
+char *itoa(long value, char *buffer, int base) {
+	char *start = buffer;
+	char *end;
+	unsigned long magnitude;
+
+	if (base < 2 || base > 36) {
+		buffer[0] = '\0';
+		return buffer;
+	}
+	if (value < 0 && base == 10) {
+		*buffer++ = '-';
+		magnitude = (unsigned long)(-(value + 1)) + 1;
+	} else {
+		magnitude = (unsigned long)value;
+	}
+	end = buffer;
+	do {
+		uint8_t digit = magnitude % base;
+		*end++ = digit < 10 ? '0' + digit : 'A' + digit - 10;
+		magnitude /= base;
+	} while (magnitude != 0);
+	*end-- = '\0';
+	while (buffer < end) {
+		char tmp = *buffer;
+		*buffer++ = *end;
+		*end-- = tmp;
+	}
+	return start;
+}
+
+void msleep(int millisec) {
+	uint16_t start = timer_ms();
+	uint16_t elapsed = 0;
+
+	while (elapsed < millisec) {
+		uint16_t now = timer_ms();
+		elapsed = now >= start ? now - start : now + 60000U - start;
+	}
+}

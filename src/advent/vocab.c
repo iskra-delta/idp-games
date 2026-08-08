@@ -138,7 +138,7 @@ int vocab(char *word,int type)                  /* look up a word      */
 	}
 	hc &= HTSIZE - 1;
 	if (voc[hc].txtlen == 0) { return 0; }
-	fread(buffer, (UINT16)voc[hc].seekadr + VOC_OFS, voc[hc].txtlen);
+	game_file_read(buffer, (UINT16)voc[hc].seekadr + VOC_OFS, voc[hc].txtlen);
 	UINT8 *eod = buffer + voc[hc].txtlen;
 	// parse HT entry
 	for (UINT8 *ptr = buffer; ptr < eod; ptr++) {

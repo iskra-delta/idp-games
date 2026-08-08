@@ -15,7 +15,7 @@ typedef struct {
 	grid_col cols_new[11];
 	uint8_t col_non_empty_first;
 	uint8_t col_non_empty_last;
-} grid;
+} grid_t;
 
 typedef enum {
 	STATE_MOVE_RIGHT = 0,
@@ -57,12 +57,12 @@ typedef struct {
 	uint8_t score_frame;
 	uint16_t score_x;
 	bool destroyed;
-} mothership;
+} mothership_t;
 
 typedef struct {
 	object_state state;
 	uint16_t x;
-} player;
+} player_t;
 
 typedef struct {
 	uint16_t x;
@@ -76,7 +76,7 @@ typedef struct {
 	uint8_t explode_frame;
 	invader *hit_invader;
 	bool can_hit_shield;
-} missile;
+} missile_t;
 
 typedef struct {
 	bool active;
