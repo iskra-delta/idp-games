@@ -2,5 +2,7 @@ bin/
 obj/
 build/
 .vs/
+tools/x-s-linux/
+tools/x-m-linux/
 
 *.bak

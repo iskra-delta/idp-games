@@ -10,21 +10,21 @@ This repository contains a collection of games for the Iskra Delta Partner:
 
 ## Compiling
 
-The build uses the locally built XCC compiler together with the Partner SDK,
-target libraries, and `cpmdisk` from the
+The build downloads the latest model-M XCC release and uses the Partner SDK
+and `cpmdisk` from the
 [`wischner/xcc-z80-idp`](https://github.com/wischner/docker-toolchains)
-image. By default, XCC is loaded from
-`../../retro-vault/xyz/bin/x/bin/xcc`. Build that compiler first, then run:
+image. Model M keeps `float` and `long`, while omitting `double`, `long long`,
+and stdio floating-point conversions. Run:
 
 ```sh
 make
 ```
 
-The host Makefile mounts the local compiler over the image's XCC binary, then
-performs the complete build with the Partner SDK and `cpmdisk` supplied by the
-image. Override `LOCAL_XCC=/absolute/path/to/xcc` if the X tools checkout is
-elsewhere. No SDK submodules, host linker, CP/M disk definitions, or additional
-libraries are required.
+The host Makefile downloads `x-m-linux.zip` from the latest XCC GitHub release.
+It runs that compiler, assembler, linker, and its model-M target libraries in
+the container alongside the Partner SDK. The image also supplies `cpmdisk`.
+No local toolchain checkout, SDK submodules, host linker, CP/M disk definitions,
+or additional libraries are required.
 
 Build outputs are written to `bin/`:
 

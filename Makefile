@@ -1,38 +1,43 @@
 # IDP Games build.
 #
-# The host make starts one container; make inside the container performs the
-# complete build with xcc and cpmdisk.
+# Uses the downloaded model-M X compilation suite for xcc/xas/xld.
+# Uses the docker container for the Partner SDK and cpmdisk.
 
-IMAGE		= wischner/xcc-z80-idp:latest
-LOCAL_XCC	?= $(abspath ../../retro-vault/xyz/bin/x/bin/xcc)
+X_SUITE_URL		= https://github.com/retro-vault/xyz/releases/latest/download/x-m-linux.zip
+X_SUITE_DIR		= tools/x-m-linux
+X_BIN_DIR		= $(X_SUITE_DIR)/bin
+XCC				= $(X_BIN_DIR)/xcc
+XLD				= $(X_BIN_DIR)/xld
 
-ifeq ($(IN_CONTAINER),)
-
-CONTAINER_WORKDIR	= /work
-DOCKER_RUN		= docker run --rm \
-					--user "$(shell id -u):$(shell id -g)" \
-					-v "$(CURDIR):$(CONTAINER_WORKDIR)" \
-					-v "$(LOCAL_XCC):/opt/x/bin/xcc:ro" \
-					-w $(CONTAINER_WORKDIR) \
-					$(IMAGE)
+IMAGE			= wischner/xcc-z80-idp:latest
+DOCKER_RUN_CPMDISK	= docker run --rm \
+						--user "$(shell id -u):$(shell id -g)" \
+						-v "$(CURDIR):$(CURDIR)" \
+						-w $(CURDIR) \
+						$(IMAGE)
 
 .PHONY: all com img clean
-all com img:
-	test -x "$(LOCAL_XCC)"
-	$(DOCKER_RUN) make --no-print-directory IN_CONTAINER=1 $@
+com:
+	make --no-print-directory all
 
-clean:
-	rm -rf build bin
-
-else
+# Check if X suite exists, if not download it (only for non-clean targets)
+ifneq ($(MAKECMDGOALS),clean)
+ifeq ($(wildcard $(XCC)),)
+$(info Downloading X compilation suite...)
+_ := $(shell mkdir -p $(X_SUITE_DIR) && cd tools && \
+	curl -sL -o x-m-linux.zip "$(X_SUITE_URL)" && \
+	unzip -q x-m-linux.zip && \
+	rm -f x-m-linux.zip)
+endif
+endif
 
 BUILD_DIR	= build
 BIN_DIR		= bin
 SRC_DIR		= src
 PLATFORM	= cpm3
-CFLAGS		= -Os -I$(SRC_DIR)
+CFLAGS		= -Os -I$(SRC_DIR) -I/opt/idp/include
 LDFLAGS		= --platform $(PLATFORM) --oformat=binary
-SDK_LIBS	= -lsdk
+SDK_LIBS	= -L/opt/idp/lib -lsdk
 DISK_TYPE	= fdd
 DISK_IMAGE	= $(BIN_DIR)/idp-games.img
 
@@ -54,15 +59,12 @@ vpath %.bin $(SRC_DIR)/advent $(SRC_DIR)/tetrisg
 .PHONY: all
 all: $(DISK_IMAGE)
 
-.PHONY: com
-com: $(COM_FILES) $(DATA_FILES)
-
 .PHONY: img
 img: $(DISK_IMAGE)
 
 $(BUILD_DIR)/%.rel: $(SRC_DIR)/%.c $(HEADERS)
 	mkdir -p $(@D)
-	xcc --platform $(PLATFORM) $(CFLAGS) -c -o $@ $<
+	$(DOCKER_RUN_CPMDISK) $(XCC) --platform $(PLATFORM) $(CFLAGS) -c -o $@ $<
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
@@ -71,22 +73,20 @@ $(BIN_DIR)/%.bin: %.bin | $(BIN_DIR)
 	cp $< $@
 
 $(BIN_DIR)/advent.com: $(ADVENT_OBJS) | $(BIN_DIR)
-	xcc $(LDFLAGS) $(SDK_LIBS) -o $@ $^
+	$(DOCKER_RUN_CPMDISK) $(XCC) $(LDFLAGS) $(SDK_LIBS) -o $@ $^
 
 define GRAPHICS_GAME_template
 $(BIN_DIR)/$(1).com: $(BUILD_DIR)/$(1)/$(1).rel $(COMMON_OBJS) | $(BIN_DIR)
-	xcc $(LDFLAGS) $(SDK_LIBS) -o $$@ $$^
+	$(DOCKER_RUN_CPMDISK) $(XCC) $(LDFLAGS) $(SDK_LIBS) -o $$@ $$^
 endef
 
 $(foreach game,$(GRAPHICS_GAMES),$(eval $(call GRAPHICS_GAME_template,$(game))))
 
 $(DISK_IMAGE): $(COM_FILES) $(DATA_FILES) | $(BIN_DIR)
 	rm -f $@
-	cpmdisk create $@ $(DISK_TYPE)
-	cpmdisk add $@ -u 0 $(COM_FILES) $(DATA_FILES)
+	$(DOCKER_RUN_CPMDISK) cpmdisk create $@ $(DISK_TYPE)
+	$(DOCKER_RUN_CPMDISK) cpmdisk add $@ -u 0 $(COM_FILES) $(DATA_FILES)
 
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
-
-endif
